@@ -4,7 +4,7 @@ class CreateDleRunTapes < ActiveRecord::Migration
       t.references :dle_run
       t.references :tape
       t.integer :size
-      t.boolean :overwritten
+      t.integer :overwritten_by_run_id, :default => nil
 
       t.timestamps
     end
