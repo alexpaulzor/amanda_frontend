@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  dle_run: 
+  tape: 
+  size: 1
+  overwritten: false
+
+two:
+  dle_run: 
+  tape: 
+  size: 1
+  overwritten: false
