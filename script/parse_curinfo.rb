@@ -3,7 +3,8 @@
 #USAGE: $0 <config>
 #
 
-AMANDA_ROOT = "/etc/amanda"
+#AMANDA_ROOT = "/etc/amanda"
+AMANDA_ROOT = "/tmp"
 
 config_name = ARGV[0]
 
@@ -13,30 +14,34 @@ end
 
 config = AmandaConfig.find_or_create_by_name(config_name)
 
-
-curinfo_root = AMANDA_ROOT + "/" + config.name + "/curinfo"
-
-host_dirs = Dir[curinfo_root]
+curinfo_root = "#{AMANDA_ROOT}/#{config.name}/curinfo"
 
 new_runs = []
 
-host_dirs.each do |host|
-  disk_dirs = Dir[curinfo_root + "/" + host]
-  disk_dirs.each do |disk|
-    dle = Dle.find_or_create_by_host_and_disk_and_amanda_config(host, disk, config)
+Dir.foreach(curinfo_root) do |host|
+  next if host.start_with?('.')
+  puts "Processing host #{host}"
+  Dir.foreach("#{curinfo_root}/#{host}") do |disk|
+    next if disk.start_with?('.')
+    puts "Processing disk #{host}/#{disk}"
+    dle = Dle.find_or_create_by_host_and_disk_and_amanda_config_id(host, disk, config.id)
 
-    File.foreach(curinfo_root + "/" + host + "/" + disk + "/info") do |line|
+    info_filename = "#{curinfo_root}/#{host}/#{disk}/info"
+
+    File.foreach(info_filename) do |line|
       if line.start_with?("history:")
         fields = line.split
-        run = Run.find_or_create_by_amanda_config_and_date(config, Time.at(fields[4].to_i))
-        dle_run = DleRun.find_or_initialize_by_run_and_dle(run, dle)
-        if not dle_run.exists?
+        run = Run.find_or_create_by_amanda_config_id_and_date(config.id, Time.at(fields[4].to_i))
+        dle_run = DleRun.find_or_initialize_by_run_id_and_dle_id(run.id, dle.id)
+        if not dle_run.persisted?
+          if not new_runs.include?(run)
+            puts "New run: #{run}"
+            new_runs << run
+          end
+          puts "New dle run: #{dle} @ #{run}"
           dle_run.level = fields[1].to_i
           dle_run.size = fields[3].to_i
           dle_run.save
-          if not new_runs.include?(run)
-            new_runs << run
-          end
         end
       end
     end
@@ -44,32 +49,43 @@ host_dirs.each do |host|
 end
 
 new_runs.sort_by{|run| run.date}.each do |run|
+  puts "Processing run #{run}"
   log_name = "log.#{run.date.to_s(:number)}.0"
-  File.foreach(AMANDA_ROOT + "/" + config.name + "/" + log_name) do |line|
+  log_filename = "#{AMANDA_ROOT}/#{config.name}/#{log_name}"
+  puts "Reading log #{log_filename}"
+  next if not File.exist?(log_filename)
+  File.foreach(log_filename) do |line|
     if line.start_with?("PART taper")
+      puts "Got line #{line}"
       fields = line.split
       tape_name = fields[2]
       host = fields[4]
       disk = fields[5]
       size = fields[12]
 
-      dle = Dle.find_by_amanda_config_and_host_and_disk(config, host, disk)
+      dle = Dle.find_by_amanda_config_id_and_host_and_disk(config.id, host, disk)
+      puts "Got dle #{dle}"
+      next if not dle.exists?
 
-      dle_run = DleRun.find_by_run_and_dle(run, dle)
+      dle_run = DleRun.find_by_run_id_and_dle_id(run.id, dle.id)
+      puts "Got dle_run #{dle_run}"
+      next if not dle_run.exists?
 
-      tape = Tape.find_by_name_and_amanda_config(tape_name, config)
+      tape = Tape.find_or_create_by_name_and_amanda_config_id(tape_name, config.id)
+      puts "Got tape #{tape}"
 
       # invalidate old tapes
-      old_dle_run_tapes = DleRunTape.find_by_tape_and_overwritten_by_run_id(tape, nil)
+      old_dle_run_tapes = DleRunTape.find_all_by_tape_id_and_overwritten_by_run_id(tape.id, nil)
       old_dle_run_tapes.each do |dle_run_tape|
         if dle_run_tape.dle_run.run_id != run.id
+          puts "Invalidating dle run tape #{dle_run_tape}"
           dle_run_tape.overwritten_by_run_id = run.id
           dle_run_tape.save!
         end
       end
     
-      dle_run_tape = dle_run.dle_run_tapes.find_or_initialize_by_tape(tape)
-      if dle_run_tape.exists?
+      dle_run_tape = DleRunTape.find_or_initialize_by_tape_id_and_dle_run_id(tape, dle_run.id)
+      if dle_run_tape.persisted?
         dle_run_tape.size += size
       else
         dle_run_tape.size = size
