@@ -1,0 +1,27 @@
+<h3><%= link_to "Config", :amanda_configs %>: <%= @amanda_config.name %></h3>
+
+<table>
+    <tr>
+        <th colspan=4>DLEs</th>
+    </tr>
+    <tr>
+        <th>Host</th>
+        <th>Disk</th>
+        <th>Last run</th>
+        <th>Last level0</th>
+    </tr>
+    <% @amanda_config.dles.each do |dle| %>
+      <tr>
+        <td><%= dle.host %></td>
+        <td><%= link_to dle.disk, dle %></td>
+        <td><%= dle.last_run.run.pretty_date %></td>
+        <td><%= dle.last_lev0.run.pretty_date %></td>
+      </tr>
+    <% end %>
+</table>
+
+
+        <% @amanda_config.runs.order("date DESC").limit(10).each do |run| %>
+            <%= link_to run.pretty_date, run %><br />
+        <% end %>
+    </td>

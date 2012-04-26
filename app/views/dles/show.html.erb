@@ -1,0 +1,26 @@
+<p id="notice"><%= notice %></p>
+
+<h3>DLE: <%= link_to @dle.amanda_config.name, @dle.amanda_config %><%= ":#{@dle.host}/#{@dle.disk}" %></h3>
+
+<table>
+    <tr><th colspan=4>Runs</th></tr>
+    <tr>
+        <th>Date</th>
+        <th>Level</th>
+        <th>Size</th>
+        <th>Tapes</th>
+    </tr>
+    <% @dle.dle_runs.each do |dle_run| %>
+        <tr>
+            <td><%= link_to dle_run.run.date.strftime("%Y-%m-%d %H:%M"), dle_run.run %></td>
+            <td><%= dle_run.level %></td>
+            <td><%= dle_run.size_human %></td>
+            <td>
+                <% dle_run.dle_run_tapes.each do |drt| %>
+                    <%= link_to drt.tape.name, drt.tape %><br />
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+</table>
+

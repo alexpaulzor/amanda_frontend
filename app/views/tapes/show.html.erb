@@ -1,0 +1,24 @@
+<h3><%= link_to "Tape", :tapes %>: <%= link_to @tape.amanda_config.name, @tape.amanda_config %>:<%= @tape.name %></h3>
+<table>
+    <tr><th colspan=4>Runs</th></tr>
+    <tr>
+        <th>Date</th>
+        <th>DLE</th>
+        <th>Level</th>
+        <th>Size</th>
+        <th>Overwritten by</th>
+    </tr>
+    <% DleRunTape.where(:tape_id => @tape.id).joins(:run).joins(:dle).order("runs.date DESC", "dles.host", "dles.disk").each do |drt| %>
+        <tr>
+            <td><%= link_to drt.run.date.strftime("%Y-%m-%d %H:%M"), drt.run %></td>
+            <td><%= link_to "#{drt.dle.host}/#{drt.dle.disk}", drt.dle %></td>
+            <td><%= drt.dle_run.level %></td>
+            <td><%= drt.size_human %></td>
+            <td>
+                <% if drt.overwritten_by_run_id %>
+                    <%= link_to Run.find(drt.overwritten_by_run_id).date.strftime("%Y-%m-%d %H:%M"), Run.find(drt.overwritten_by_run_id) %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+</table>

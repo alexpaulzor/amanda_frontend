@@ -1,0 +1,21 @@
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Contents</th>
+  </tr>
+
+<% @runs.each do |run| %>
+  <tr>
+    <td><%= link_to run.pretty_date, run %></td>
+    <td><table>
+      <% run.dle_runs.each do |dr| %>
+        <tr>
+          <td><%= link_to dr.dle.name, dr.dle %></td> 
+          <td><%= dr.level %></td>
+          <td><%= dr.size_human %></td>
+        </tr>
+      <% end %>
+    </table></td>
+  </tr>
+<% end %>
+</table>

@@ -1,0 +1,21 @@
+<h1>Listing dles</h1>
+
+<table>
+  <tr>
+    <th>Config</th>
+    <th>Host</th>
+    <th>Disk</th>
+    <th>Last run</th>
+    <th>Last level0</th>
+  </tr>
+
+<% @dles.each do |dle| %>
+  <tr>
+    <td><%= link_to dle.amanda_config.name, dle.amanda_config %></td>
+    <td><%= dle.host %></td>
+    <td><%= link_to dle.disk, dle %></td>
+    <td><%= dle.last_run.run.date.strftime("%Y-%m-%d %H:%M") %></td>
+    <td><%= dle.last_lev0.run.date.strftime("%Y-%m-%d %H:%M") %></td>
+  </tr>
+<% end %>
+</table>

@@ -1,0 +1,23 @@
+<table>
+  <tr>
+    <th>Name</th>
+    <th>DLEs</th>
+    <th>Runs</th>
+  </tr>
+
+<% @amanda_configs.each do |amanda_config| %>
+  <tr>
+    <td><%= link_to amanda_config.name, amanda_config %></td>
+    <td>
+        <% amanda_config.dles.order(:host, :disk).each do |dle| %>
+          <%= link_to dle.name, dle %><br />
+        <% end %>
+      </td>
+      <td>
+        <% amanda_config.runs.order("date DESC").limit(10).each do |run| %>
+          <%= link_to run.pretty_date, run %><br />
+        <% end %>
+      </td>
+  </tr>
+<% end %>
+</table>

@@ -1,0 +1,17 @@
+<%= form_for(@amanda_config) do |f| %>
+  <% if @amanda_config.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@amanda_config.errors.count, "error") %> prohibited this amanda_config from being saved:</h2>
+
+      <ul>
+      <% @amanda_config.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,28 @@
+<h3> <%= link_to @run.amanda_config.name, @run.amanda_config %> <%= link_to "Run", :runs %> @ <%= @run.pretty_date %></h3>
+
+<table>
+    <tr>
+        <th>DLE</th>
+        <th>Level</th>
+        <th>Size</th>
+        <th>Tapes</th>
+    </tr>
+  <% @run.dle_runs.each do |dr| %>
+    <tr>
+      <td><%= link_to dr.dle.name, dr.dle %></td> 
+      <td><%= dr.level %></td>
+      <td><%= dr.size_human %></td>
+      <td>
+        <table>
+            <% dr.dle_run_tapes.each do |drt| %>
+                <tr>
+                    <td><%= link_to drt.tape.name, drt.tape %></td>
+                    <td><%= drt.size_human %></td>
+                </tr>
+            <% end %>
+        </table>
+    </td>
+
+    </tr>
+  <% end %>
+</table>

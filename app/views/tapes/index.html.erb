@@ -1,0 +1,25 @@
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Last used</th>
+    <th>Contents</th>
+  </tr>
+
+<% @tapes.each do |tape| %>
+  <tr>
+    <td><%= link_to tape.name, tape %></td>
+    <td><%= link_to tape.most_recent_run.pretty_date, tape.most_recent_run %></td>
+    <td>
+      <table>
+        <% DleRunTape.where(:tape_id => tape.id).joins(:dle_run).where("dle_runs.run_id = ?", tape.most_recent_run.id).joins(:dle).order("host", "disk").each do |drt| %>
+          <tr>
+            <td><%= link_to drt.dle.name, drt.dle %></td>
+            <td><%= drt.dle_run.level %></td>
+            <td><%= drt.size_human %></td>
+          </tr>
+        <% end %>
+      </table>
+    </td>
+  </tr>
+<% end %>
+</table>
